@@ -5,75 +5,159 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SimpleSocial - Connect & Share</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Google Sign-In API -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <meta name="google-signin-client_id" content="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com">
 </head>
 <body>
-    <div class="container">
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-container">
+            <div class="login-card">
+                <h1 class="login-logo">📱 SimpleSocial</h1>
+                <p class="login-tagline">Connect, Share, and Discover</p>
+                <div class="login-features">
+                    <div class="feature-item">✨ Share your moments</div>
+                    <div class="feature-item">🎬 Post short videos</div>
+                    <div class="feature-item">💬 Engage with friends</div>
+                </div>
+                <div id="googleSignInBtn" class="google-signin-btn"></div>
+                <p class="login-note">Sign in with your Google account to continue</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App (hidden until logged in) -->
+    <div id="mainApp" class="container" style="display: none;">
         <!-- Header -->
         <header class="header">
             <div class="header-content">
                 <h1 class="logo">📱 SimpleSocial</h1>
                 <div class="user-info">
-                    <span class="username" id="currentUser">Guest User</span>
-                    <button class="btn-secondary" id="changeUserBtn">Change User</button>
+                    <img id="userAvatar" class="user-avatar-img" src="" alt="User Avatar">
+                    <span class="username" id="currentUser">User</span>
+                    <button class="btn-secondary" id="signOutBtn">Sign Out</button>
                 </div>
             </div>
         </header>
 
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-section="posts">
+                📝 Posts
+            </button>
+            <button class="nav-tab" data-section="videos">
+                🎬 Videos
+            </button>
+        </nav>
+
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Create Post Section -->
-            <div class="create-post-card">
-                <div class="user-avatar">👤</div>
-                <div class="create-post-input">
-                    <textarea
-                        id="postInput"
-                        placeholder="What's on your mind?"
-                        rows="3"
-                    ></textarea>
-                    <div class="create-post-actions">
-                        <div class="post-options">
-                            <span class="post-option">📷 Photo</span>
-                            <span class="post-option">😊 Feeling</span>
+            <!-- Posts Section -->
+            <div id="postsSection" class="content-section active">
+                <!-- Create Post Section -->
+                <div class="create-post-card">
+                    <img id="postUserAvatar" class="user-avatar-small" src="" alt="Avatar">
+                    <div class="create-post-input">
+                        <textarea
+                            id="postInput"
+                            placeholder="What's on your mind?"
+                            rows="3"
+                        ></textarea>
+                        <div class="create-post-actions">
+                            <div class="post-options">
+                                <span class="post-option">📷 Photo</span>
+                                <span class="post-option">😊 Feeling</span>
+                            </div>
+                            <button class="btn-primary" id="postBtn">Post</button>
                         </div>
-                        <button class="btn-primary" id="postBtn">Post</button>
                     </div>
+                </div>
+
+                <!-- Filter Options -->
+                <div class="filter-section">
+                    <button class="filter-btn active" data-filter="all">🔥 Trending</button>
+                    <button class="filter-btn" data-filter="my">📌 My Posts</button>
+                    <button class="filter-btn" data-filter="liked">❤️ Liked</button>
+                </div>
+
+                <!-- Posts Feed -->
+                <div id="postsFeed" class="posts-feed">
+                    <!-- Posts will be dynamically added here -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="empty-state">
+                    <div class="empty-icon">📝</div>
+                    <h3>No posts yet</h3>
+                    <p>Be the first to share something!</p>
                 </div>
             </div>
 
-            <!-- Filter Options -->
-            <div class="filter-section">
-                <button class="filter-btn active" data-filter="all">All Posts</button>
-                <button class="filter-btn" data-filter="my">My Posts</button>
-                <button class="filter-btn" data-filter="liked">Liked</button>
-            </div>
+            <!-- Videos Section -->
+            <div id="videosSection" class="content-section">
+                <!-- Create Video Section -->
+                <div class="create-video-card">
+                    <h3>📹 Share a Video</h3>
+                    <input
+                        type="text"
+                        id="videoUrlInput"
+                        placeholder="Enter YouTube, Vimeo, or direct video URL"
+                        class="video-url-input"
+                    >
+                    <textarea
+                        id="videoDescInput"
+                        placeholder="Add a description..."
+                        rows="2"
+                        class="video-desc-input"
+                    ></textarea>
+                    <button class="btn-primary" id="videoBtn">Post Video</button>
+                </div>
 
-            <!-- Posts Feed -->
-            <div id="postsFeed" class="posts-feed">
-                <!-- Posts will be dynamically added here -->
-            </div>
+                <!-- Video Filter -->
+                <div class="filter-section">
+                    <button class="filter-btn active" data-video-filter="all">🔥 Trending</button>
+                    <button class="filter-btn" data-video-filter="my">📌 My Videos</button>
+                    <button class="filter-btn" data-video-filter="liked">❤️ Liked</button>
+                </div>
 
-            <!-- Empty State -->
-            <div id="emptyState" class="empty-state">
-                <div class="empty-icon">📝</div>
-                <h3>No posts yet</h3>
-                <p>Be the first to share something!</p>
+                <!-- Videos Grid -->
+                <div id="videosFeed" class="videos-feed">
+                    <!-- Videos will be dynamically added here -->
+                </div>
+
+                <!-- Empty State for Videos -->
+                <div id="videosEmptyState" class="empty-state">
+                    <div class="empty-icon">🎬</div>
+                    <h3>No videos yet</h3>
+                    <p>Be the first to share a video!</p>
+                </div>
             </div>
         </main>
     </div>
 
-    <!-- User Modal -->
-    <div id="userModal" class="modal">
-        <div class="modal-content">
-            <h2>Change Username</h2>
-            <input
-                type="text"
-                id="usernameInput"
-                placeholder="Enter your username"
-                maxlength="20"
-            >
-            <div class="modal-actions">
-                <button class="btn-secondary" id="cancelBtn">Cancel</button>
-                <button class="btn-primary" id="saveUserBtn">Save</button>
+    <!-- Video Modal -->
+    <div id="videoModal" class="modal">
+        <div class="modal-content video-modal-content">
+            <button class="modal-close" id="closeVideoModal">✕</button>
+            <div id="videoPlayerContainer" class="video-player-container">
+                <!-- Video player will be injected here -->
+            </div>
+            <div class="video-modal-info">
+                <div class="video-modal-header">
+                    <img id="videoModalAvatar" class="user-avatar-small" src="" alt="Avatar">
+                    <div>
+                        <div class="video-modal-username" id="videoModalUsername"></div>
+                        <div class="video-modal-time" id="videoModalTime"></div>
+                    </div>
+                </div>
+                <div class="video-modal-description" id="videoModalDesc"></div>
+                <div class="video-modal-actions">
+                    <button class="video-action-btn" id="videoModalLikeBtn">
+                        <span id="videoModalLikeIcon">🤍</span>
+                        <span id="videoModalLikeCount">0</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
