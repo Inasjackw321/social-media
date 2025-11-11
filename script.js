@@ -81,7 +81,7 @@ class SocialMediaApp {
 
     showMainApp() {
         document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('mainApp').style.display = 'block';
+        document.getElementById('mainApp').style.display = 'flex';
         this.updateUserInfo();
         this.renderPosts();
         this.renderVideos();
@@ -89,16 +89,22 @@ class SocialMediaApp {
     }
 
     updateUserInfo() {
-        document.getElementById('currentUser').textContent = this.currentUser.name;
-        document.getElementById('userAvatar').src = this.currentUser.picture;
+        // Update sidebar profile
+        document.getElementById('sidebarName').textContent = this.currentUser.name;
+        document.getElementById('sidebarAvatar').src = this.currentUser.picture;
+
+        // Update compose avatars
         document.getElementById('postUserAvatar').src = this.currentUser.picture;
+        const videoAvatar = document.getElementById('videoUserAvatar');
+        if (videoAvatar) videoAvatar.src = this.currentUser.picture;
     }
 
     attachEventListeners() {
-        // Navigation tabs
-        document.querySelectorAll('.nav-tab').forEach(tab => {
-            tab.addEventListener('click', (e) => {
-                this.switchSection(e.target.dataset.section);
+        // Navigation items (sidebar)
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                const section = e.currentTarget.dataset.section;
+                if (section) this.switchSection(section);
             });
         });
 
@@ -119,15 +125,15 @@ class SocialMediaApp {
         // Video button
         document.getElementById('videoBtn').addEventListener('click', () => this.createVideo());
 
-        // Filter buttons for posts
-        document.querySelectorAll('[data-filter]').forEach(btn => {
+        // Filter buttons for posts (feed-tab)
+        document.querySelectorAll('.feed-tab[data-filter]').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 this.setFilter(e.target.dataset.filter);
             });
         });
 
         // Filter buttons for videos
-        document.querySelectorAll('[data-video-filter]').forEach(btn => {
+        document.querySelectorAll('.feed-tab[data-video-filter]').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 this.setVideoFilter(e.target.dataset.videoFilter);
             });
@@ -149,15 +155,21 @@ class SocialMediaApp {
     switchSection(section) {
         this.currentSection = section;
 
-        // Update tabs
-        document.querySelectorAll('.nav-tab').forEach(tab => {
-            tab.classList.remove('active');
-            if (tab.dataset.section === section) {
-                tab.classList.add('active');
+        // Update sidebar nav items
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+            if (item.dataset.section === section) {
+                item.classList.add('active');
             }
         });
 
-        // Update sections
+        // Update feed title
+        const feedTitle = document.getElementById('feedTitle');
+        if (feedTitle) {
+            feedTitle.textContent = section === 'posts' ? 'Home' : 'Videos';
+        }
+
+        // Update content sections
         document.querySelectorAll('.content-section').forEach(sec => {
             sec.classList.remove('active');
         });
@@ -275,8 +287,8 @@ class SocialMediaApp {
     setFilter(filter) {
         this.currentFilter = filter;
 
-        // Update active button
-        document.querySelectorAll('[data-filter]').forEach(btn => {
+        // Update active tab
+        document.querySelectorAll('.feed-tab[data-filter]').forEach(btn => {
             btn.classList.remove('active');
             if (btn.dataset.filter === filter) {
                 btn.classList.add('active');
@@ -365,43 +377,41 @@ class SocialMediaApp {
 
         return `
             <div class="post-card">
-                <div class="post-header">
-                    <img src="${post.userPicture}" alt="${this.escapeHtml(post.username)}" class="post-user-avatar-img">
-                    <div class="post-user-info">
-                        <div class="post-username">${this.escapeHtml(post.username)}</div>
-                        <div class="post-time">${timeAgo}</div>
+                <img src="${post.userPicture}" alt="${this.escapeHtml(post.username)}" class="post-user-avatar-img">
+                <div class="post-body">
+                    <div class="post-header">
+                        <span class="post-username">${this.escapeHtml(post.username)}</span>
+                        <span class="post-time"> · ${timeAgo}</span>
+                        ${isOwnPost ? `
+                            <button class="post-delete-btn" data-post-id="${post.id}" data-action="delete" title="Delete">
+                                ×
+                            </button>
+                        ` : ''}
                     </div>
-                    ${isOwnPost ? `
-                        <button class="post-delete-btn" data-post-id="${post.id}" data-action="delete" title="Delete post">
-                            🗑️
+                    <div class="post-content">${this.escapeHtml(post.content)}</div>
+                    <div class="post-actions">
+                        <button class="post-action-btn"
+                                data-post-id="${post.id}"
+                                data-action="comment">
+                            💬 <span>${post.comments.length || ''}</span>
                         </button>
-                    ` : ''}
-                </div>
-                <div class="post-content">${this.escapeHtml(post.content)}</div>
-                <div class="post-actions">
-                    <button class="post-action-btn ${isLiked ? 'liked' : ''}"
-                            data-post-id="${post.id}"
-                            data-action="like">
-                        ${isLiked ? '❤️' : '🤍'}
-                        <span>${post.likes.length > 0 ? post.likes.length : ''} ${post.likes.length === 1 ? 'Like' : 'Likes'}</span>
-                    </button>
-                    <button class="post-action-btn ${post.comments.length > 0 ? 'commented' : ''}"
-                            data-post-id="${post.id}"
-                            data-action="comment">
-                        💬
-                        <span>${post.comments.length > 0 ? post.comments.length : ''} ${post.comments.length === 1 ? 'Comment' : 'Comments'}</span>
-                    </button>
-                </div>
-                <div class="comments-section" id="comments-${post.id}" style="display: none;">
-                    ${post.comments.map(comment => this.renderComment(comment)).join('')}
-                    <div class="comment-input-container">
-                        <img src="${this.currentUser.picture}" alt="You" class="comment-avatar-small">
-                        <input
-                            type="text"
-                            class="comment-input"
-                            id="commentInput-${post.id}"
-                            placeholder="Write a comment..."
-                        >
+                        <button class="post-action-btn ${isLiked ? 'liked' : ''}"
+                                data-post-id="${post.id}"
+                                data-action="like">
+                            ${isLiked ? '❤️' : '🤍'} <span>${post.likes.length || ''}</span>
+                        </button>
+                    </div>
+                    <div class="comments-section" id="comments-${post.id}" style="display: none;">
+                        ${post.comments.map(comment => this.renderComment(comment)).join('')}
+                        <div class="comment-input-container">
+                            <img src="${this.currentUser.picture}" alt="You" class="comment-avatar-small">
+                            <input
+                                type="text"
+                                class="comment-input"
+                                id="commentInput-${post.id}"
+                                placeholder="Post your reply"
+                            >
+                        </div>
                     </div>
                 </div>
             </div>
@@ -454,8 +464,8 @@ class SocialMediaApp {
     setVideoFilter(filter) {
         this.currentVideoFilter = filter;
 
-        // Update active button
-        document.querySelectorAll('[data-video-filter]').forEach(btn => {
+        // Update active tab
+        document.querySelectorAll('.feed-tab[data-video-filter]').forEach(btn => {
             btn.classList.remove('active');
             if (btn.dataset.videoFilter === filter) {
                 btn.classList.add('active');

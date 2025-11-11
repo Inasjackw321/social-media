@@ -1,108 +1,108 @@
-# SimpleSocial - Social Media Platform with Google Auth
+# YourSocial - It's what's happening
 
-A feature-rich social media application with Google authentication, engagement-based algorithm, and short video support. Built with vanilla HTML, CSS, and JavaScript - perfect for GitHub Pages!
+A modern social media platform with Twitter-style UI, Google authentication, engagement algorithm, and video sharing. Built with vanilla HTML, CSS, and JavaScript - perfect for GitHub Pages!
 
 ## Features
 
-### Authentication
-- **Google Sign-In**: Secure login with your Google account
-- **User Profiles**: Automatic profile setup with name and avatar from Google
-- **Session Persistence**: Stay logged in across browser sessions
+### Design
+- **Twitter-Inspired UI**: Clean, modern interface with dark theme
+- **Responsive Layout**: Three-column layout on desktop, optimized for mobile
+- **Smooth Animations**: Fade-in effects and smooth transitions
+- **Left Sidebar**: Navigation with Home and Videos sections
+- **Trends Sidebar**: What's happening (visible on larger screens)
 
-### Posts
-- **Create Posts**: Share your thoughts with the community
-- **Like Posts**: Show appreciation with a simple click
-- **Comment on Posts**: Engage in conversations
-- **Delete Posts**: Remove your own posts
-- **Smart Feed**: Posts sorted by an engagement-based algorithm
+### Authentication
+- **Google Sign-In**: Secure OAuth 2.0 authentication
+- **Profile Integration**: Automatic profile setup with name and avatar
+- **Session Persistence**: Stay logged in across sessions
+
+### Social Features
+- **Create Posts**: Share thoughts with "What is happening?!" composer
+- **Like Posts**: Heart/unlike posts with visual feedback
+- **Comment System**: Threaded replies on posts
+- **Delete Posts**: Remove your own content
+- **Smart Feed**: Engagement-based algorithm ranks content
 
 ### Videos
-- **Short Video Section**: Share YouTube, Vimeo, or direct video URLs
-- **Video Grid**: Beautiful grid layout for browsing videos
-- **Full-Screen Player**: Watch videos in an immersive modal
-- **Video Stats**: Track likes and views
-- **Auto Thumbnails**: Automatic thumbnail generation for YouTube videos
+- **Video Section**: Dedicated tab for short-form video content
+- **Grid Layout**: 2-column grid on desktop, single column on mobile
+- **Supported Platforms**: YouTube, Vimeo, and direct video URLs
+- **Video Stats**: Track views and likes
+- **Full-Screen Player**: Immersive video viewing experience
 
 ### Engagement Algorithm
-The app features a custom engagement algorithm that:
-- Ranks content based on likes, comments, and recency
-- Uses exponential time decay (10% per hour)
-- Weighs comments more heavily than likes (3x vs 2x)
-- Shows trending content first in the "Trending" filter
+Smart feed ranking based on:
+- **Time Decay**: Posts lose 10% engagement per hour (exponential)
+- **Weighted Metrics**: Comments (3x) valued more than likes (2x)
+- **Trending First**: "For you" feed shows most engaging recent content
+- **Base Score**: All content gets initial visibility
 
-### Design
-- **Responsive Design**: Works on desktop, tablet, and mobile
-- **Modern UI**: Clean interface with smooth animations
-- **Tab Navigation**: Easy switching between Posts and Videos
-- **Filter Options**: Trending, My Posts/Videos, and Liked content
+**Formula:**
+```
+Score = (10 + Likes×2 + Comments×3) × e^(-0.1 × hours)
+```
 
 ## Live Demo
 
-Visit the live application at: `https://[your-username].github.io/social-media/`
+Visit: `https://[your-username].github.io/social-media/`
 
 ## Setup Instructions
 
 ### 1. Get Google OAuth Credentials
 
-To enable Google Sign-In, you need to create OAuth credentials:
-
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select an existing one
-3. Enable the **Google+ API**
-4. Go to **Credentials** → **Create Credentials** → **OAuth 2.0 Client ID**
-5. Configure the OAuth consent screen
-6. For **Authorized JavaScript origins**, add:
-   - `http://localhost:8000` (for local testing)
-   - `https://[your-username].github.io` (for GitHub Pages)
+2. Create a new project or select existing
+3. Enable **Google+ API**
+4. Navigate to **Credentials** → **Create Credentials** → **OAuth 2.0 Client ID**
+5. Configure OAuth consent screen
+6. Add **Authorized JavaScript origins**:
+   - `http://localhost:8000` (local testing)
+   - `https://[your-username].github.io` (GitHub Pages)
 7. Copy your **Client ID**
 
-### 2. Configure the Application
+### 2. Configure Application
 
-1. Open `index.html` and replace `YOUR_GOOGLE_CLIENT_ID` with your actual Client ID:
-   ```html
-   <meta name="google-signin-client_id" content="YOUR_CLIENT_ID_HERE.apps.googleusercontent.com">
-   ```
+**Update `index.html` (line 10):**
+```html
+<meta name="google-signin-client_id" content="YOUR_CLIENT_ID_HERE.apps.googleusercontent.com">
+```
 
-2. Open `script.js` and replace the Client ID in the `initGoogleSignIn()` method:
-   ```javascript
-   client_id: 'YOUR_CLIENT_ID_HERE.apps.googleusercontent.com',
-   ```
+**Update `script.js` (line 28):**
+```javascript
+client_id: 'YOUR_CLIENT_ID_HERE.apps.googleusercontent.com',
+```
 
-### 3. Running Locally
+### 3. Run Locally
 
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/[your-username]/social-media.git
-   cd social-media
-   ```
+```bash
+# Clone repository
+git clone https://github.com/[your-username]/social-media.git
+cd social-media
 
-2. Start a local server:
-   ```bash
-   python -m http.server 8000
-   # or
-   npx http-server -p 8000
-   ```
+# Start local server
+python -m http.server 8000
+# or
+npx http-server -p 8000
 
-3. Open your browser and navigate to:
-   ```
-   http://localhost:8000
-   ```
+# Open browser
+open http://localhost:8000
+```
 
 ### 4. Deploy to GitHub Pages
 
-1. Push your code to GitHub:
+1. **Push to GitHub:**
    ```bash
    git add .
-   git commit -m "Deploy SimpleSocial"
+   git commit -m "Deploy YourSocial"
    git push origin main
    ```
 
-2. Enable GitHub Pages:
-   - Go to repository **Settings** → **Pages**
-   - Select the branch (usually `main`)
-   - Click **Save**
+2. **Enable GitHub Pages:**
+   - Repository Settings → Pages
+   - Source: Select `main` branch
+   - Click Save
 
-3. Your site will be live at:
+3. **Access Your Site:**
    ```
    https://[your-username].github.io/social-media/
    ```
@@ -110,77 +110,83 @@ To enable Google Sign-In, you need to create OAuth credentials:
 ## How to Use
 
 ### Getting Started
-1. **Sign In**: Click the "Sign in with Google" button
-2. **Authorize**: Allow SimpleSocial to access your basic profile info
-3. **Start Sharing**: You're ready to post and share videos!
+1. Sign in with Google account
+2. Grant profile access permissions
+3. Start posting and sharing videos!
 
 ### Creating Posts
-1. Click on the **Posts** tab
-2. Type your message in the text area
-3. Click **Post** or press `Enter`
+1. Click in the "What is happening?!" composer
+2. Type your message
+3. Press "Post" or `Enter`
 
 ### Sharing Videos
-1. Click on the **Videos** tab
-2. Paste a YouTube, Vimeo, or direct video URL
-3. Add a description (optional)
-4. Click **Post Video**
+1. Click "Videos" in left sidebar
+2. Paste video URL (YouTube, Vimeo, or direct)
+3. Add description
+4. Click "Post"
 
-Supported video formats:
-- YouTube: `https://youtube.com/watch?v=...` or `https://youtu.be/...`
-- Vimeo: `https://vimeo.com/...`
-- Direct links: `.mp4`, `.webm`, `.ogg` files
+**Supported formats:**
+- YouTube: `youtube.com/watch?v=...` or `youtu.be/...`
+- Vimeo: `vimeo.com/...`
+- Direct: `.mp4`, `.webm`, `.ogg` files
 
-### Interacting with Content
-- **Like**: Click the heart icon
-- **Comment**: Click the comment icon, type, and press `Enter`
-- **Watch Video**: Click any video card to open the full-screen player
-- **Filter**: Use Trending, My Posts/Videos, or Liked filters
-- **Delete**: Click the trash icon on your own posts
+### Interacting
+- **Like**: Click heart icon on posts
+- **Comment**: Click comment icon, type reply, press Enter
+- **Watch Video**: Click video card for full-screen player
+- **Switch Feeds**: Use "For you", "Your posts", "Liked" tabs
+- **Delete**: Click × on your own posts
+
+## UI Components
+
+### Left Sidebar
+- Logo
+- Home navigation
+- Videos navigation
+- User profile with sign out
+
+### Main Feed
+- Sticky header with section title
+- Tab bar for filtering
+- Compose area for posts/videos
+- Feed with infinite scroll potential
+- Empty states
+
+### Right Sidebar (Desktop)
+- Trending widget
+- "What's happening" section
+- Expandable on larger screens
 
 ## Technology Stack
 
-- **HTML5**: Semantic markup and structure
-- **CSS3**: Modern styling with CSS Grid, Flexbox, and animations
-- **Vanilla JavaScript**: ES6+ with class-based architecture
-- **Google Sign-In API**: OAuth 2.0 authentication
-- **LocalStorage API**: Client-side data persistence
+- **HTML5**: Semantic markup, SVG icons
+- **CSS3**: Grid, Flexbox, CSS Variables, animations
+- **JavaScript ES6+**: Classes, arrow functions, template literals
+- **Google Sign-In API**: OAuth 2.0
+- **LocalStorage**: Client-side persistence
 
-## Engagement Algorithm
+## Color Scheme
 
-The feed uses a smart algorithm to surface engaging content:
-
+```css
+--twitter-blue: #1d9bf0
+--bg-primary: #000000 (pure black)
+--bg-secondary: #16181c (dark gray)
+--text-primary: #e7e9ea (off-white)
+--text-secondary: #71767b (gray)
+--border-color: #2f3336
 ```
-Engagement Score = (Base Score + Engagement Boost) × Time Decay
-
-Where:
-- Base Score = 10
-- Engagement Boost = (Likes × 2) + (Comments × 3)
-- Time Decay = e^(-0.1 × hours_since_post)
-```
-
-This ensures:
-- New posts get initial visibility
-- Engaging content rises to the top
-- Comments are valued more than likes
-- Old content gradually fades
 
 ## Data Storage
 
-All data is stored in your browser's localStorage:
-- **User Profile**: Name, email, avatar (from Google)
+All data stored in browser localStorage:
+- **User Profile**: Google account info
 - **Posts**: Content, likes, comments, timestamps
-- **Videos**: URLs, descriptions, likes, views
-- **Privacy**: No data is sent to external servers
+- **Videos**: URLs, descriptions, engagement stats
+- **Privacy**: No external server communication
 
-Note: Data is local to your browser and device. Clearing browser data will delete all posts and videos.
+**Note**: Clearing browser data deletes all content
 
-## Browser Compatibility
-
-Works on all modern browsers with:
-- ES6+ JavaScript support
-- CSS Grid and Flexbox
-- LocalStorage API
-- Google Sign-In API
+## Browser Support
 
 Tested on:
 - Chrome 90+
@@ -188,63 +194,86 @@ Tested on:
 - Safari 14+
 - Edge 90+
 
-## Security & Privacy
+Requires:
+- ES6+ JavaScript
+- CSS Grid/Flexbox
+- LocalStorage
+- Google Sign-In API
 
-- **OAuth 2.0**: Secure authentication via Google
-- **No Backend**: All data stays in your browser
-- **XSS Protection**: HTML escaping on all user inputs
-- **HTTPS Only**: Google Sign-In requires HTTPS in production
+## Responsive Breakpoints
+
+- **Desktop (1024px+)**: Three-column layout
+- **Tablet (768-1023px)**: Two-column, collapsed sidebar
+- **Mobile (<768px)**: Single column, icon-only sidebar
+- **Small (<500px)**: No sidebar, full-width feed
+
+## Performance
+
+- **Lazy Loading**: Videos load on demand
+- **CSS Animations**: GPU-accelerated transitions
+- **Event Delegation**: Efficient DOM event handling
+- **Local Storage**: Fast client-side data access
+
+## Security
+
+- **OAuth 2.0**: Secure Google authentication
+- **XSS Protection**: HTML escaping on all inputs
+- **No Backend**: Zero server-side vulnerabilities
+- **HTTPS Required**: Google Sign-In enforces HTTPS in production
 
 ## Future Enhancements
 
-Potential features for future versions:
-- Image/GIF upload support
+- Image upload and display
+- GIF support
+- Emoji picker
 - Video upload (not just URLs)
-- Real-time updates with WebSockets
-- Backend integration (Firebase, Supabase)
+- Real-time updates (WebSockets)
+- Backend integration (Firebase/Supabase)
 - Push notifications
-- Dark mode
-- Hashtag and mention support
+- Hashtags and mentions
 - Search functionality
-- User profiles and followers
+- User profiles and following
 - Direct messaging
+- Tweet threads
+- Polls
 
 ## Troubleshooting
 
-### Google Sign-In not working
-- Verify your Client ID is correct
-- Check Authorized JavaScript origins in Google Cloud Console
-- Ensure you're accessing via the correct domain (localhost or GitHub Pages URL)
-- Clear browser cache and try again
+### Google Sign-In Issues
+- Verify Client ID is correct
+- Check authorized origins in Google Console
+- Ensure correct domain (localhost or GitHub Pages URL)
+- Clear browser cache
 
-### Videos not playing
-- Verify the URL format is correct
-- Some videos may have embedding disabled by the uploader
-- Try a different video source
+### Videos Not Playing
+- Check URL format
+- Some content may have embedding disabled
+- Try different video source
+- Open browser console for errors
 
-### Data disappeared
-- Check if browser data/cookies were cleared
-- Data is specific to each browser and device
-- Consider exporting data regularly (future feature)
+### Data Loss
+- Data tied to browser/device
+- Clearing cookies/storage deletes data
+- Export/import feature coming soon
 
 ## Contributing
 
-Contributions are welcome! To contribute:
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'Add amazing feature'`
-4. Push to the branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
+1. Fork repository
+2. Create feature branch: `git checkout -b feature/amazing-feature`
+3. Commit changes: `git commit -m 'Add amazing feature'`
+4. Push to branch: `git push origin feature/amazing-feature`
+5. Open Pull Request
 
 ## License
 
-This project is open source and available under the MIT License.
+MIT License - Open source and free to use
 
-## Author
+## Credits
 
 Built with vanilla JavaScript - no frameworks, just clean code!
 
+Inspired by Twitter/X's clean, modern interface.
+
 ---
 
-Made with ❤️ for the web
+**YourSocial** - It's what's happening · Made with ❤️ for the web
