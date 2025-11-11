@@ -24,7 +24,11 @@ class SocialMediaApp {
                 google.accounts.id.initialize({
                     client_id: '415975643615-8rk7tehocfghjr2v3np4oacd06ka8q3k.apps.googleusercontent.com',
                     callback: this.handleGoogleSignIn.bind(this),
-                    auto_select: false
+                    auto_select: false,
+                    context: 'signin',
+                    ux_mode: 'popup',
+                    // Only request profile info, no additional scopes needed
+                    scope: 'profile email'
                 });
 
                 const btnContainer = document.getElementById('googleSignInBtn');
@@ -61,7 +65,9 @@ class SocialMediaApp {
                 id: payload.sub,
                 name: payload.name,
                 email: payload.email,
-                picture: payload.picture
+                picture: payload.picture,
+                token: response.credential,
+                tokenExpiry: payload.exp * 1000 // Convert to milliseconds
             };
 
             localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
@@ -86,6 +92,15 @@ class SocialMediaApp {
         const savedUser = localStorage.getItem('currentUser');
         if (savedUser) {
             this.currentUser = JSON.parse(savedUser);
+
+            // Check if token is expired
+            if (this.currentUser.tokenExpiry && Date.now() > this.currentUser.tokenExpiry) {
+                console.log('Session expired. Please sign in again.');
+                localStorage.removeItem('currentUser');
+                this.currentUser = null;
+                return;
+            }
+
             this.showMainApp();
         }
     }
