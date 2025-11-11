@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Test - YourSocial</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #7c3aed;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        #googleSignInBtn {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+        }
+        button {
+            background: #7c3aed;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #6d28d9;
+        }
+    </style>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+    <div class="test-box">
+        <h1>🔍 Google OAuth Login Test</h1>
+
+        <div id="diagnostics">
+            <h3>Diagnostic Results:</h3>
+        </div>
+
+        <h3>Google Sign-In Button:</h3>
+        <div id="googleSignInBtn"></div>
+
+        <div id="result"></div>
+
+        <button onclick="runDiagnostics()">Run Diagnostics Again</button>
+        <button onclick="clearStorage()">Clear LocalStorage</button>
+        <button onclick="window.location.href='index.html'">Back to App</button>
+    </div>
+
+    <script>
+        const CLIENT_ID = '415975643615-8rk7tehocfghjr2v3np4oacd06ka8q3k.apps.googleusercontent.com';
+
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = message;
+            document.getElementById('diagnostics').appendChild(div);
+        }
+
+        function runDiagnostics() {
+            document.getElementById('diagnostics').innerHTML = '<h3>Diagnostic Results:</h3>';
+
+            // Check 1: HTTPS or localhost
+            const protocol = window.location.protocol;
+            const hostname = window.location.hostname;
+            if (protocol === 'https:' || hostname === 'localhost' || hostname === '127.0.0.1') {
+                log('✓ Running on secure origin: ' + protocol + '//' + hostname, 'success');
+            } else {
+                log('✗ ERROR: Must run on HTTPS or localhost. Currently: ' + protocol + '//' + hostname, 'error');
+            }
+
+            // Check 2: Google API loaded
+            if (window.google && window.google.accounts) {
+                log('✓ Google Sign-In API loaded', 'success');
+            } else {
+                log('✗ ERROR: Google Sign-In API not loaded yet. Wait a moment...', 'error');
+                setTimeout(runDiagnostics, 1000);
+                return;
+            }
+
+            // Check 3: Client ID
+            log('ℹ Using Client ID: ' + CLIENT_ID, 'info');
+
+            // Check 4: localStorage
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                log('✓ localStorage is working', 'success');
+            } catch (e) {
+                log('✗ ERROR: localStorage not available: ' + e.message, 'error');
+            }
+
+            // Check 5: Existing session
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                const user = JSON.parse(savedUser);
+                if (user.tokenExpiry && Date.now() > user.tokenExpiry) {
+                    log('⚠ Expired session found for: ' + user.name, 'error');
+                } else {
+                    log('ℹ Active session found for: ' + user.name, 'info');
+                }
+            } else {
+                log('ℹ No existing session', 'info');
+            }
+
+            initGoogleSignIn();
+        }
+
+        function initGoogleSignIn() {
+            if (!window.google || !window.google.accounts) {
+                log('⏳ Waiting for Google API...', 'info');
+                setTimeout(initGoogleSignIn, 500);
+                return;
+            }
+
+            try {
+                google.accounts.id.initialize({
+                    client_id: CLIENT_ID,
+                    callback: handleSignIn,
+                    auto_select: false,
+                    context: 'signin',
+                    ux_mode: 'popup'
+                });
+
+                const btnContainer = document.getElementById('googleSignInBtn');
+                if (btnContainer) {
+                    google.accounts.id.renderButton(
+                        btnContainer,
+                        {
+                            theme: 'outline',
+                            size: 'large',
+                            width: 350,
+                            text: 'continue_with',
+                            shape: 'rectangular'
+                        }
+                    );
+                    log('✓ Google Sign-In button rendered', 'success');
+                }
+
+                // Trigger one-tap
+                google.accounts.id.prompt((notification) => {
+                    if (notification.isNotDisplayed()) {
+                        log('⚠ One-tap not displayed: ' + notification.getNotDisplayedReason(), 'info');
+                    } else if (notification.isSkippedMoment()) {
+                        log('⚠ One-tap skipped: ' + notification.getSkippedReason(), 'info');
+                    }
+                });
+
+            } catch (error) {
+                log('✗ ERROR initializing Google Sign-In: ' + error.message, 'error');
+            }
+        }
+
+        function handleSignIn(response) {
+            try {
+                const payload = parseJwt(response.credential);
+
+                log('✓ Sign-In Successful!', 'success');
+                log('✓ Name: ' + payload.name, 'success');
+                log('✓ Email: ' + payload.email, 'success');
+
+                const user = {
+                    id: payload.sub,
+                    name: payload.name,
+                    email: payload.email,
+                    picture: payload.picture,
+                    token: response.credential,
+                    tokenExpiry: payload.exp * 1000
+                };
+
+                localStorage.setItem('currentUser', JSON.stringify(user));
+
+                document.getElementById('result').innerHTML = `
+                    <div class="status success">
+                        <h3>✓ Login Successful!</h3>
+                        <p>Name: ${user.name}</p>
+                        <p>Email: ${user.email}</p>
+                        <button onclick="window.location.href='index.html'">Go to App</button>
+                    </div>
+                `;
+            } catch (error) {
+                log('✗ ERROR processing sign-in: ' + error.message, 'error');
+            }
+        }
+
+        function parseJwt(token) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        }
+
+        function clearStorage() {
+            localStorage.clear();
+            log('✓ LocalStorage cleared', 'success');
+            setTimeout(() => location.reload(), 1000);
+        }
+
+        // Auto-run diagnostics on load
+        window.addEventListener('load', () => {
+            setTimeout(runDiagnostics, 500);
+        });
+    </script>
+</body>
+</html>
