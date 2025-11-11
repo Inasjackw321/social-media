@@ -25,7 +25,7 @@ class SocialMediaApp {
         // Initialize Google Sign-In button
         if (window.google) {
             google.accounts.id.initialize({
-                client_id: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
+                client_id: '415975643615-8rk7tehocfghjr2v3np4oacd06ka8q3k.apps.googleusercontent.com',
                 callback: this.handleGoogleSignIn.bind(this)
             });
 
