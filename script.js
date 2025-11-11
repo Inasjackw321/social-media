@@ -18,38 +18,74 @@ class SocialMediaApp {
 
     // Google Sign-In Integration
     initGoogleSignIn() {
+        console.log('🔄 Initializing Google Sign-In...');
+        let attempts = 0;
+        const maxAttempts = 50; // Try for up to 5 seconds
+
         // Wait for Google API to load
         const initGoogle = () => {
+            attempts++;
+            console.log(`Attempt ${attempts}: Checking for Google API...`);
+
             if (window.google && window.google.accounts) {
-                google.accounts.id.initialize({
-                    client_id: '415975643615-8rk7tehocfghjr2v3np4oacd06ka8q3k.apps.googleusercontent.com',
-                    callback: this.handleGoogleSignIn.bind(this),
-                    auto_select: false,
-                    context: 'signin',
-                    ux_mode: 'popup',
-                    // Only request profile info, no additional scopes needed
-                    scope: 'profile email'
-                });
+                console.log('✅ Google API loaded successfully!');
 
-                const btnContainer = document.getElementById('googleSignInBtn');
-                if (btnContainer) {
-                    google.accounts.id.renderButton(
-                        btnContainer,
-                        {
-                            theme: 'outline',
-                            size: 'large',
-                            width: 350,
-                            text: 'continue_with',
-                            shape: 'rectangular'
-                        }
-                    );
+                try {
+                    google.accounts.id.initialize({
+                        client_id: '415975643615-8rk7tehocfghjr2v3np4oacd06ka8q3k.apps.googleusercontent.com',
+                        callback: this.handleGoogleSignIn.bind(this),
+                        auto_select: false,
+                        context: 'signin',
+                        ux_mode: 'popup'
+                    });
+                    console.log('✅ Google Sign-In initialized');
+
+                    const btnContainer = document.getElementById('googleSignInBtn');
+                    console.log('Button container:', btnContainer);
+
+                    if (btnContainer) {
+                        google.accounts.id.renderButton(
+                            btnContainer,
+                            {
+                                theme: 'filled_blue',
+                                size: 'large',
+                                width: 350,
+                                text: 'continue_with',
+                                shape: 'rectangular'
+                            }
+                        );
+                        console.log('✅ Google Sign-In button rendered');
+                    } else {
+                        console.error('❌ Button container not found!');
+                    }
+
+                    // Also prompt for one-tap
+                    google.accounts.id.prompt((notification) => {
+                        console.log('One-tap notification:', notification);
+                    });
+                } catch (error) {
+                    console.error('❌ Error initializing Google Sign-In:', error);
                 }
-
-                // Also prompt for one-tap
-                google.accounts.id.prompt();
             } else {
-                // Retry after a short delay
-                setTimeout(initGoogle, 100);
+                if (attempts >= maxAttempts) {
+                    console.error('❌ Google API failed to load after ' + maxAttempts + ' attempts');
+                    const btnContainer = document.getElementById('googleSignInBtn');
+                    if (btnContainer) {
+                        btnContainer.innerHTML = `
+                            <div style="padding: 20px; text-align: center; color: #721c24; background: #f8d7da; border-radius: 8px;">
+                                <p style="margin: 0 0 10px 0; font-weight: bold;">⚠️ Google Sign-In Failed to Load</p>
+                                <p style="margin: 0; font-size: 14px;">Please check your internet connection and refresh the page.</p>
+                                <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: #7c3aed; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                                    Refresh Page
+                                </button>
+                            </div>
+                        `;
+                    }
+                } else {
+                    // Retry after a short delay
+                    console.log('⏳ Google API not ready, retrying...');
+                    setTimeout(initGoogle, 100);
+                }
             }
         };
 
