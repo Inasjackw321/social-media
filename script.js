@@ -13,34 +13,69 @@ class SocialMediaApp {
     }
 
     init() {
-        this.checkAuth();
         this.setupAuthListeners();
+        this.checkAuth();
     }
 
     // Authentication
     setupAuthListeners() {
-        // Show/hide forms
-        document.getElementById('showSignup').addEventListener('click', () => {
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('signupForm').style.display = 'flex';
-        });
+        console.log('Setting up auth listeners...');
 
-        document.getElementById('showLogin').addEventListener('click', () => {
-            document.getElementById('signupForm').style.display = 'none';
-            document.getElementById('loginForm').style.display = 'flex';
-        });
+        // Show/hide forms
+        const showSignup = document.getElementById('showSignup');
+        const showLogin = document.getElementById('showLogin');
+        const loginBtn = document.getElementById('loginBtn');
+        const signupBtn = document.getElementById('signupBtn');
+
+        console.log('Elements found:', {showSignup, showLogin, loginBtn, signupBtn});
+
+        if (showSignup) {
+            showSignup.addEventListener('click', () => {
+                console.log('Show signup clicked');
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('signupForm').style.display = 'flex';
+            });
+        }
+
+        if (showLogin) {
+            showLogin.addEventListener('click', () => {
+                console.log('Show login clicked');
+                document.getElementById('signupForm').style.display = 'none';
+                document.getElementById('loginForm').style.display = 'flex';
+            });
+        }
 
         // Login
-        document.getElementById('loginBtn').addEventListener('click', () => this.login());
-        document.getElementById('loginPassword').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.login();
-        });
+        if (loginBtn) {
+            loginBtn.addEventListener('click', () => {
+                console.log('Login button clicked');
+                this.login();
+            });
+        }
+
+        const loginPassword = document.getElementById('loginPassword');
+        if (loginPassword) {
+            loginPassword.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') this.login();
+            });
+        }
 
         // Signup
-        document.getElementById('signupBtn').addEventListener('click', () => this.signup());
-        document.getElementById('signupPassword').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.signup();
-        });
+        if (signupBtn) {
+            signupBtn.addEventListener('click', () => {
+                console.log('Signup button clicked');
+                this.signup();
+            });
+        }
+
+        const signupPassword = document.getElementById('signupPassword');
+        if (signupPassword) {
+            signupPassword.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') this.signup();
+            });
+        }
+
+        console.log('Auth listeners setup complete');
     }
 
     login() {
@@ -69,10 +104,14 @@ class SocialMediaApp {
     }
 
     signup() {
+        console.log('Signup function called');
+
         const username = document.getElementById('signupUsername').value.trim();
         const password = document.getElementById('signupPassword').value;
         const picture = document.getElementById('signupPicture').value.trim();
         const verified = document.getElementById('signupVerified').checked;
+
+        console.log('Signup data:', {username, password: '***', picture, verified});
 
         if (!username || !password) {
             alert('Please enter username and password');
@@ -93,12 +132,18 @@ class SocialMediaApp {
             verified: verified
         };
 
+        console.log('Creating new user:', {...newUser, password: '***'});
+
         this.users[username.toLowerCase()] = newUser;
         localStorage.setItem('users', JSON.stringify(this.users));
+
+        console.log('User saved to localStorage');
 
         // Auto login
         this.currentUser = newUser;
         localStorage.setItem('currentUser', JSON.stringify(newUser));
+
+        console.log('Auto-login complete, showing main app');
         this.showMainApp();
     }
 
