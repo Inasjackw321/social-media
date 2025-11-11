@@ -1,8 +1,9 @@
-// Social Media App - Main JavaScript with Google Auth
+// Social Media App - Simple Authentication
 
 class SocialMediaApp {
     constructor() {
         this.currentUser = null;
+        this.users = JSON.parse(localStorage.getItem('users')) || {};
         this.posts = JSON.parse(localStorage.getItem('posts')) || [];
         this.videos = JSON.parse(localStorage.getItem('videos')) || [];
         this.currentFilter = 'all';
@@ -13,115 +14,92 @@ class SocialMediaApp {
 
     init() {
         this.checkAuth();
-        this.initGoogleSignIn();
+        this.setupAuthListeners();
     }
 
-    // Google Sign-In Integration
-    initGoogleSignIn() {
-        console.log('🔄 Initializing Google Sign-In...');
-        let attempts = 0;
-        const maxAttempts = 50; // Try for up to 5 seconds
+    // Authentication
+    setupAuthListeners() {
+        // Show/hide forms
+        document.getElementById('showSignup').addEventListener('click', () => {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('signupForm').style.display = 'flex';
+        });
 
-        // Wait for Google API to load
-        const initGoogle = () => {
-            attempts++;
-            console.log(`Attempt ${attempts}: Checking for Google API...`);
+        document.getElementById('showLogin').addEventListener('click', () => {
+            document.getElementById('signupForm').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'flex';
+        });
 
-            if (window.google && window.google.accounts) {
-                console.log('✅ Google API loaded successfully!');
+        // Login
+        document.getElementById('loginBtn').addEventListener('click', () => this.login());
+        document.getElementById('loginPassword').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.login();
+        });
 
-                try {
-                    google.accounts.id.initialize({
-                        client_id: '415975643615-9hlbr2vik86u0sj4ldvrtjmliqovprb1.apps.googleusercontent.com',
-                        callback: this.handleGoogleSignIn.bind(this),
-                        auto_select: false,
-                        context: 'signin',
-                        ux_mode: 'popup'
-                    });
-                    console.log('✅ Google Sign-In initialized');
+        // Signup
+        document.getElementById('signupBtn').addEventListener('click', () => this.signup());
+        document.getElementById('signupPassword').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.signup();
+        });
+    }
 
-                    const btnContainer = document.getElementById('googleSignInBtn');
-                    console.log('Button container:', btnContainer);
+    login() {
+        const username = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value;
 
-                    if (btnContainer) {
-                        google.accounts.id.renderButton(
-                            btnContainer,
-                            {
-                                theme: 'filled_blue',
-                                size: 'large',
-                                width: 350,
-                                text: 'continue_with',
-                                shape: 'rectangular'
-                            }
-                        );
-                        console.log('✅ Google Sign-In button rendered');
-                    } else {
-                        console.error('❌ Button container not found!');
-                    }
+        if (!username || !password) {
+            alert('Please enter username and password');
+            return;
+        }
 
-                    // Also prompt for one-tap
-                    google.accounts.id.prompt((notification) => {
-                        console.log('One-tap notification:', notification);
-                    });
-                } catch (error) {
-                    console.error('❌ Error initializing Google Sign-In:', error);
-                }
-            } else {
-                if (attempts >= maxAttempts) {
-                    console.error('❌ Google API failed to load after ' + maxAttempts + ' attempts');
-                    const btnContainer = document.getElementById('googleSignInBtn');
-                    if (btnContainer) {
-                        btnContainer.innerHTML = `
-                            <div style="padding: 20px; text-align: center; color: #721c24; background: #f8d7da; border-radius: 8px;">
-                                <p style="margin: 0 0 10px 0; font-weight: bold;">⚠️ Google Sign-In Failed to Load</p>
-                                <p style="margin: 0; font-size: 14px;">Please check your internet connection and refresh the page.</p>
-                                <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: #7c3aed; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                                    Refresh Page
-                                </button>
-                            </div>
-                        `;
-                    }
-                } else {
-                    // Retry after a short delay
-                    console.log('⏳ Google API not ready, retrying...');
-                    setTimeout(initGoogle, 100);
-                }
-            }
+        const user = this.users[username.toLowerCase()];
+        if (!user) {
+            alert('User not found. Please sign up first.');
+            return;
+        }
+
+        if (user.password !== password) {
+            alert('Incorrect password');
+            return;
+        }
+
+        this.currentUser = user;
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        this.showMainApp();
+    }
+
+    signup() {
+        const username = document.getElementById('signupUsername').value.trim();
+        const password = document.getElementById('signupPassword').value;
+        const picture = document.getElementById('signupPicture').value.trim();
+        const verified = document.getElementById('signupVerified').checked;
+
+        if (!username || !password) {
+            alert('Please enter username and password');
+            return;
+        }
+
+        if (this.users[username.toLowerCase()]) {
+            alert('Username already exists. Please choose another.');
+            return;
+        }
+
+        // Create new user
+        const newUser = {
+            id: Date.now().toString(),
+            username: username,
+            password: password,
+            picture: picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=7c3aed&color=fff&size=200`,
+            verified: verified
         };
 
-        initGoogle();
-    }
+        this.users[username.toLowerCase()] = newUser;
+        localStorage.setItem('users', JSON.stringify(this.users));
 
-    handleGoogleSignIn(response) {
-        try {
-            // Decode JWT token to get user info
-            const payload = this.parseJwt(response.credential);
-
-            this.currentUser = {
-                id: payload.sub,
-                name: payload.name,
-                email: payload.email,
-                picture: payload.picture,
-                token: response.credential,
-                tokenExpiry: payload.exp * 1000 // Convert to milliseconds
-            };
-
-            localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
-            this.showMainApp();
-        } catch (error) {
-            console.error('Error signing in:', error);
-            alert('Failed to sign in. Please try again.');
-        }
-    }
-
-    parseJwt(token) {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-
-        return JSON.parse(jsonPayload);
+        // Auto login
+        this.currentUser = newUser;
+        localStorage.setItem('currentUser', JSON.stringify(newUser));
+        this.showMainApp();
     }
 
     checkAuth() {
@@ -129,21 +107,10 @@ class SocialMediaApp {
         if (savedUser) {
             try {
                 this.currentUser = JSON.parse(savedUser);
-
-                // Check if token is expired
-                if (this.currentUser.tokenExpiry && Date.now() > this.currentUser.tokenExpiry) {
-                    console.log('Session expired. Please sign in again.');
-                    localStorage.removeItem('currentUser');
-                    this.currentUser = null;
-                    return;
-                }
-
                 this.showMainApp();
             } catch (error) {
-                console.error('❌ Invalid session data found in localStorage:', error);
-                console.log('🧹 Clearing corrupted session data...');
+                console.error('❌ Invalid session data:', error);
                 localStorage.removeItem('currentUser');
-                this.currentUser = null;
             }
         }
     }
@@ -158,12 +125,10 @@ class SocialMediaApp {
     }
 
     updateUserInfo() {
-        // Update nav bar user info
-        document.getElementById('navUserName').textContent = this.currentUser.name;
+        document.getElementById('navUserName').textContent = this.currentUser.username;
         document.getElementById('navUserAvatar').src = this.currentUser.picture;
-
-        // Update compose avatars
         document.getElementById('composeAvatar').src = this.currentUser.picture;
+
         const videoAvatar = document.getElementById('videoComposeAvatar');
         if (videoAvatar) videoAvatar.src = this.currentUser.picture;
     }
@@ -194,7 +159,7 @@ class SocialMediaApp {
         // Video button
         document.getElementById('videoBtn').addEventListener('click', () => this.createVideo());
 
-        // Filter buttons for posts (pill)
+        // Filter buttons for posts
         document.querySelectorAll('.pill[data-filter]').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 this.setFilter(e.target.dataset.filter);
@@ -248,9 +213,7 @@ class SocialMediaApp {
             this.currentUser = null;
             document.getElementById('mainApp').style.display = 'none';
             document.getElementById('loginScreen').style.display = 'flex';
-            if (window.google) {
-                google.accounts.id.disableAutoSelect();
-            }
+            location.reload();
         }
     }
 
@@ -259,16 +222,13 @@ class SocialMediaApp {
         const now = Date.now();
         const ageInHours = (now - new Date(item.timestamp).getTime()) / (1000 * 60 * 60);
 
-        // Engagement metrics
         const likes = item.likes ? item.likes.length : 0;
         const comments = item.comments ? item.comments.length : 0;
 
-        // Algorithm: newer posts get boosted, engagement adds to score
-        // Time decay: posts lose 10% score per hour
         const timeDecay = Math.exp(-0.1 * ageInHours);
-        const engagementBoost = (likes * 2) + (comments * 3); // Comments worth more
+        const engagementBoost = (likes * 2) + (comments * 3);
 
-        return (engagementBoost + 10) * timeDecay; // Base score of 10
+        return (engagementBoost + 10) * timeDecay;
     }
 
     sortByEngagement(items) {
@@ -289,8 +249,9 @@ class SocialMediaApp {
         const post = {
             id: Date.now(),
             userId: this.currentUser.id,
-            username: this.currentUser.name,
+            username: this.currentUser.username,
             userPicture: this.currentUser.picture,
+            verified: this.currentUser.verified,
             content: content,
             timestamp: new Date().toISOString(),
             likes: [],
@@ -334,8 +295,9 @@ class SocialMediaApp {
         const comment = {
             id: Date.now(),
             userId: this.currentUser.id,
-            username: this.currentUser.name,
+            username: this.currentUser.username,
             userPicture: this.currentUser.picture,
+            verified: this.currentUser.verified,
             text: commentText.trim(),
             timestamp: new Date().toISOString()
         };
@@ -348,7 +310,6 @@ class SocialMediaApp {
     setFilter(filter) {
         this.currentFilter = filter;
 
-        // Update active pill
         document.querySelectorAll('.pill[data-filter]').forEach(btn => {
             btn.classList.remove('active');
             if (btn.dataset.filter === filter) {
@@ -372,7 +333,6 @@ class SocialMediaApp {
                 filtered = [...this.posts];
         }
 
-        // Apply engagement algorithm for "all" filter (trending)
         if (this.currentFilter === 'all') {
             return this.sortByEngagement(filtered);
         }
@@ -394,7 +354,6 @@ class SocialMediaApp {
         emptyState.classList.remove('show');
         feed.innerHTML = filteredPosts.map(post => this.renderPost(post)).join('');
 
-        // Attach event listeners to dynamically created elements
         filteredPosts.forEach(post => {
             const likeBtn = document.querySelector(`[data-post-id="${post.id}"][data-action="like"]`);
             if (likeBtn) {
@@ -435,13 +394,14 @@ class SocialMediaApp {
         const isLiked = post.likes.includes(this.currentUser.id);
         const isOwnPost = post.userId === this.currentUser.id;
         const timeAgo = this.getTimeAgo(post.timestamp);
+        const verifiedBadge = post.verified ? '<span class="verified-badge">✓</span>' : '';
 
         return `
             <div class="post-card">
                 <img src="${post.userPicture}" alt="${this.escapeHtml(post.username)}" class="post-user-avatar-img">
                 <div class="post-body">
                     <div class="post-header">
-                        <span class="post-username">${this.escapeHtml(post.username)}</span>
+                        <span class="post-username">${this.escapeHtml(post.username)}${verifiedBadge}</span>
                         <span class="post-time"> · ${timeAgo}</span>
                         ${isOwnPost ? `
                             <button class="post-delete-btn" data-post-id="${post.id}" data-action="delete" title="Delete">
@@ -480,11 +440,12 @@ class SocialMediaApp {
     }
 
     renderComment(comment) {
+        const verifiedBadge = comment.verified ? '<span class="verified-badge">✓</span>' : '';
         return `
             <div class="comment">
                 <img src="${comment.userPicture}" alt="${this.escapeHtml(comment.username)}" class="comment-avatar-small">
                 <div class="comment-content">
-                    <div class="comment-username">${this.escapeHtml(comment.username)}</div>
+                    <div class="comment-username">${this.escapeHtml(comment.username)}${verifiedBadge}</div>
                     <div class="comment-text">${this.escapeHtml(comment.text)}</div>
                 </div>
             </div>
@@ -506,8 +467,9 @@ class SocialMediaApp {
         const video = {
             id: Date.now(),
             userId: this.currentUser.id,
-            username: this.currentUser.name,
+            username: this.currentUser.username,
             userPicture: this.currentUser.picture,
+            verified: this.currentUser.verified,
             url: url,
             description: description || 'No description',
             timestamp: new Date().toISOString(),
@@ -525,7 +487,6 @@ class SocialMediaApp {
     setVideoFilter(filter) {
         this.currentVideoFilter = filter;
 
-        // Update active pill
         document.querySelectorAll('.pill[data-video-filter]').forEach(btn => {
             btn.classList.remove('active');
             if (btn.dataset.videoFilter === filter) {
@@ -549,7 +510,6 @@ class SocialMediaApp {
                 filtered = [...this.videos];
         }
 
-        // Apply engagement algorithm for trending
         if (this.currentVideoFilter === 'all') {
             return this.sortByEngagement(filtered);
         }
@@ -571,7 +531,6 @@ class SocialMediaApp {
         emptyState.classList.remove('show');
         feed.innerHTML = filteredVideos.map(video => this.renderVideoCard(video)).join('');
 
-        // Attach click listeners
         filteredVideos.forEach(video => {
             const card = document.querySelector(`[data-video-id="${video.id}"]`);
             if (card) {
@@ -606,35 +565,30 @@ class SocialMediaApp {
     }
 
     getVideoThumbnail(url) {
-        // YouTube
         const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
         if (youtubeMatch) {
             return `https://img.youtube.com/vi/${youtubeMatch[1]}/maxresdefault.jpg`;
         }
 
-        // Vimeo
         const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
         if (vimeoMatch) {
-            return null; // Vimeo requires API call for thumbnail
+            return null;
         }
 
         return null;
     }
 
     getEmbedUrl(url) {
-        // YouTube
         const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
         if (youtubeMatch) {
             return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
         }
 
-        // Vimeo
         const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
         if (vimeoMatch) {
             return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
         }
 
-        // Direct video URL
         if (url.match(/\.(mp4|webm|ogg)$/i)) {
             return url;
         }
@@ -643,7 +597,6 @@ class SocialMediaApp {
     }
 
     openVideoModal(video) {
-        // Increment views
         video.views++;
         this.saveVideos();
 
@@ -651,10 +604,8 @@ class SocialMediaApp {
         const playerContainer = document.getElementById('videoPlayerContainer');
         const embedUrl = this.getEmbedUrl(video.url);
 
-        // Clear previous content
         playerContainer.innerHTML = '';
 
-        // Create player
         if (video.url.match(/\.(mp4|webm|ogg)$/i)) {
             playerContainer.innerHTML = `
                 <video controls autoplay>
@@ -673,7 +624,6 @@ class SocialMediaApp {
             `;
         }
 
-        // Update modal info
         document.getElementById('modalAvatar').src = video.userPicture;
         document.getElementById('modalUsername').textContent = video.username;
         document.getElementById('modalTime').textContent = this.getTimeAgo(video.timestamp);
@@ -688,7 +638,6 @@ class SocialMediaApp {
         likeCount.textContent = video.likes.length;
         likeBtn.className = `modal-like-btn ${isLiked ? 'liked' : ''}`;
 
-        // Remove old listener and add new one
         const newLikeBtn = likeBtn.cloneNode(true);
         likeBtn.parentNode.replaceChild(newLikeBtn, likeBtn);
 

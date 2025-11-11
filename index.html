@@ -24,7 +24,27 @@
             </div>
 
             <div class="login-content">
-                <div id="googleSignInBtn" class="google-btn-container"></div>
+                <!-- Login Form -->
+                <div id="loginForm" class="auth-form">
+                    <input type="text" id="loginUsername" class="auth-input" placeholder="Username" />
+                    <input type="password" id="loginPassword" class="auth-input" placeholder="Password" />
+                    <button id="loginBtn" class="auth-btn">Log In</button>
+                    <p class="auth-switch">Don't have an account? <span id="showSignup" class="auth-link">Sign Up</span></p>
+                </div>
+
+                <!-- Signup Form -->
+                <div id="signupForm" class="auth-form" style="display: none;">
+                    <input type="text" id="signupUsername" class="auth-input" placeholder="Username" />
+                    <input type="password" id="signupPassword" class="auth-input" placeholder="Password" />
+                    <input type="url" id="signupPicture" class="auth-input" placeholder="Profile Picture URL (optional)" />
+                    <label class="verified-checkbox">
+                        <input type="checkbox" id="signupVerified" />
+                        <span>Request Verified Badge ✓</span>
+                    </label>
+                    <button id="signupBtn" class="auth-btn">Sign Up</button>
+                    <p class="auth-switch">Already have an account? <span id="showLogin" class="auth-link">Log In</span></p>
+                </div>
+
                 <p class="login-terms">By continuing, you agree to our Terms of Service and Privacy Policy</p>
             </div>
 
