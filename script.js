@@ -32,7 +32,7 @@ class SocialMediaApp {
 
                 try {
                     google.accounts.id.initialize({
-                        client_id: '415975643615-8rk7tehocfghjr2v3np4oacd06ka8q3k.apps.googleusercontent.com',
+                        client_id: '415975643615-0hu7tsfeo8cjjj1ni5fo0lh6aqdr5u4l.apps.googleusercontent.com',
                         callback: this.handleGoogleSignIn.bind(this),
                         auto_select: false,
                         context: 'signin',
