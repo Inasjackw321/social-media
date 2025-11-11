@@ -127,17 +127,24 @@ class SocialMediaApp {
     checkAuth() {
         const savedUser = localStorage.getItem('currentUser');
         if (savedUser) {
-            this.currentUser = JSON.parse(savedUser);
+            try {
+                this.currentUser = JSON.parse(savedUser);
 
-            // Check if token is expired
-            if (this.currentUser.tokenExpiry && Date.now() > this.currentUser.tokenExpiry) {
-                console.log('Session expired. Please sign in again.');
+                // Check if token is expired
+                if (this.currentUser.tokenExpiry && Date.now() > this.currentUser.tokenExpiry) {
+                    console.log('Session expired. Please sign in again.');
+                    localStorage.removeItem('currentUser');
+                    this.currentUser = null;
+                    return;
+                }
+
+                this.showMainApp();
+            } catch (error) {
+                console.error('❌ Invalid session data found in localStorage:', error);
+                console.log('🧹 Clearing corrupted session data...');
                 localStorage.removeItem('currentUser');
                 this.currentUser = null;
-                return;
             }
-
-            this.showMainApp();
         }
     }
 
