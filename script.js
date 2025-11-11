@@ -18,27 +18,38 @@ class SocialMediaApp {
 
     // Google Sign-In Integration
     initGoogleSignIn() {
-        window.handleCredentialResponse = (response) => {
-            this.handleGoogleSignIn(response);
+        // Wait for Google API to load
+        const initGoogle = () => {
+            if (window.google && window.google.accounts) {
+                google.accounts.id.initialize({
+                    client_id: '415975643615-8rk7tehocfghjr2v3np4oacd06ka8q3k.apps.googleusercontent.com',
+                    callback: this.handleGoogleSignIn.bind(this),
+                    auto_select: false
+                });
+
+                const btnContainer = document.getElementById('googleSignInBtn');
+                if (btnContainer) {
+                    google.accounts.id.renderButton(
+                        btnContainer,
+                        {
+                            theme: 'outline',
+                            size: 'large',
+                            width: 350,
+                            text: 'continue_with',
+                            shape: 'rectangular'
+                        }
+                    );
+                }
+
+                // Also prompt for one-tap
+                google.accounts.id.prompt();
+            } else {
+                // Retry after a short delay
+                setTimeout(initGoogle, 100);
+            }
         };
 
-        // Initialize Google Sign-In button
-        if (window.google) {
-            google.accounts.id.initialize({
-                client_id: '415975643615-8rk7tehocfghjr2v3np4oacd06ka8q3k.apps.googleusercontent.com',
-                callback: this.handleGoogleSignIn.bind(this)
-            });
-
-            google.accounts.id.renderButton(
-                document.getElementById('googleSignInBtn'),
-                {
-                    theme: 'filled_blue',
-                    size: 'large',
-                    width: 280,
-                    text: 'signin_with'
-                }
-            );
-        }
+        initGoogle();
     }
 
     handleGoogleSignIn(response) {
@@ -81,7 +92,7 @@ class SocialMediaApp {
 
     showMainApp() {
         document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('mainApp').style.display = 'flex';
+        document.getElementById('mainApp').style.display = 'block';
         this.updateUserInfo();
         this.renderPosts();
         this.renderVideos();
@@ -89,20 +100,20 @@ class SocialMediaApp {
     }
 
     updateUserInfo() {
-        // Update sidebar profile
-        document.getElementById('sidebarName').textContent = this.currentUser.name;
-        document.getElementById('sidebarAvatar').src = this.currentUser.picture;
+        // Update nav bar user info
+        document.getElementById('navUserName').textContent = this.currentUser.name;
+        document.getElementById('navUserAvatar').src = this.currentUser.picture;
 
         // Update compose avatars
-        document.getElementById('postUserAvatar').src = this.currentUser.picture;
-        const videoAvatar = document.getElementById('videoUserAvatar');
+        document.getElementById('composeAvatar').src = this.currentUser.picture;
+        const videoAvatar = document.getElementById('videoComposeAvatar');
         if (videoAvatar) videoAvatar.src = this.currentUser.picture;
     }
 
     attachEventListeners() {
-        // Navigation items (sidebar)
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', (e) => {
+        // Navigation buttons
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
                 const section = e.currentTarget.dataset.section;
                 if (section) this.switchSection(section);
             });
@@ -125,15 +136,15 @@ class SocialMediaApp {
         // Video button
         document.getElementById('videoBtn').addEventListener('click', () => this.createVideo());
 
-        // Filter buttons for posts (feed-tab)
-        document.querySelectorAll('.feed-tab[data-filter]').forEach(btn => {
+        // Filter buttons for posts (pill)
+        document.querySelectorAll('.pill[data-filter]').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 this.setFilter(e.target.dataset.filter);
             });
         });
 
         // Filter buttons for videos
-        document.querySelectorAll('.feed-tab[data-video-filter]').forEach(btn => {
+        document.querySelectorAll('.pill[data-video-filter]').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 this.setVideoFilter(e.target.dataset.videoFilter);
             });
@@ -144,33 +155,25 @@ class SocialMediaApp {
             this.closeVideoModal();
         });
 
-        // Close video modal on outside click
-        document.getElementById('videoModal').addEventListener('click', (e) => {
-            if (e.target.id === 'videoModal') {
-                this.closeVideoModal();
-            }
+        // Close video modal on backdrop click
+        document.getElementById('modalBackdrop').addEventListener('click', () => {
+            this.closeVideoModal();
         });
     }
 
     switchSection(section) {
         this.currentSection = section;
 
-        // Update sidebar nav items
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.classList.remove('active');
-            if (item.dataset.section === section) {
-                item.classList.add('active');
+        // Update nav buttons
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.section === section) {
+                btn.classList.add('active');
             }
         });
 
-        // Update feed title
-        const feedTitle = document.getElementById('feedTitle');
-        if (feedTitle) {
-            feedTitle.textContent = section === 'posts' ? 'Home' : 'Videos';
-        }
-
         // Update content sections
-        document.querySelectorAll('.content-section').forEach(sec => {
+        document.querySelectorAll('.section').forEach(sec => {
             sec.classList.remove('active');
         });
 
@@ -287,8 +290,8 @@ class SocialMediaApp {
     setFilter(filter) {
         this.currentFilter = filter;
 
-        // Update active tab
-        document.querySelectorAll('.feed-tab[data-filter]').forEach(btn => {
+        // Update active pill
+        document.querySelectorAll('.pill[data-filter]').forEach(btn => {
             btn.classList.remove('active');
             if (btn.dataset.filter === filter) {
                 btn.classList.add('active');
@@ -464,8 +467,8 @@ class SocialMediaApp {
     setVideoFilter(filter) {
         this.currentVideoFilter = filter;
 
-        // Update active tab
-        document.querySelectorAll('.feed-tab[data-video-filter]').forEach(btn => {
+        // Update active pill
+        document.querySelectorAll('.pill[data-video-filter]').forEach(btn => {
             btn.classList.remove('active');
             if (btn.dataset.videoFilter === filter) {
                 btn.classList.add('active');
@@ -613,19 +616,19 @@ class SocialMediaApp {
         }
 
         // Update modal info
-        document.getElementById('videoModalAvatar').src = video.userPicture;
-        document.getElementById('videoModalUsername').textContent = video.username;
-        document.getElementById('videoModalTime').textContent = this.getTimeAgo(video.timestamp);
-        document.getElementById('videoModalDesc').textContent = video.description;
+        document.getElementById('modalAvatar').src = video.userPicture;
+        document.getElementById('modalUsername').textContent = video.username;
+        document.getElementById('modalTime').textContent = this.getTimeAgo(video.timestamp);
+        document.getElementById('modalDesc').textContent = video.description;
 
         const isLiked = video.likes.includes(this.currentUser.id);
-        const likeIcon = document.getElementById('videoModalLikeIcon');
-        const likeCount = document.getElementById('videoModalLikeCount');
-        const likeBtn = document.getElementById('videoModalLikeBtn');
+        const likeIcon = document.getElementById('modalLikeIcon');
+        const likeCount = document.getElementById('modalLikeCount');
+        const likeBtn = document.getElementById('modalLikeBtn');
 
         likeIcon.textContent = isLiked ? '❤️' : '🤍';
         likeCount.textContent = video.likes.length;
-        likeBtn.className = `video-action-btn ${isLiked ? 'liked' : ''}`;
+        likeBtn.className = `modal-like-btn ${isLiked ? 'liked' : ''}`;
 
         // Remove old listener and add new one
         const newLikeBtn = likeBtn.cloneNode(true);
@@ -641,9 +644,9 @@ class SocialMediaApp {
             this.saveVideos();
 
             const newIsLiked = video.likes.includes(this.currentUser.id);
-            document.getElementById('videoModalLikeIcon').textContent = newIsLiked ? '❤️' : '🤍';
-            document.getElementById('videoModalLikeCount').textContent = video.likes.length;
-            newLikeBtn.className = `video-action-btn ${newIsLiked ? 'liked' : ''}`;
+            document.getElementById('modalLikeIcon').textContent = newIsLiked ? '❤️' : '🤍';
+            document.getElementById('modalLikeCount').textContent = video.likes.length;
+            newLikeBtn.className = `modal-like-btn ${newIsLiked ? 'liked' : ''}`;
 
             this.renderVideos();
         });
